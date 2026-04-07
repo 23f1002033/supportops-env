@@ -126,6 +126,9 @@ def list_tasks():
             tasks[task_name] = {"error": "Failed to load task"}
     return {"tasks": tasks}
 
-def run():
+def main():
     import uvicorn
     uvicorn.run("server.app:app", host="0.0.0.0", port=int(os.environ.get("PORT", 7860)))
+
+if __name__ == "__main__":
+    main()
