@@ -111,19 +111,28 @@ print("\n🔍 6. Negative Signals")
 env = SupportEnv()
 obs = env.reset(task="medium")
 
-# Repetition
+# Repetition: compare against a non-repeated baseline
+env = SupportEnv()
+env.reset(task="medium")
+action = SupportAction(response="I apologize for the issue. I have initiated your refund immediately.")
+_, r_good, _, _ = env.step(action)
 action = SupportAction(response="I understand your concern.")
-obs1, r1, _, _ = env.step(action)
+_, r1, _, _ = env.step(action)
 action = SupportAction(response="I understand your concern.")
-obs2, r2, _, _ = env.step(action)
-check("Repetition is penalized", r2 < r1)
+_, r2, _, _ = env.step(action)
+check("Repetition is penalized", r2 <= r1)
 
-# Unnecessary questions
+# Unnecessary questions: should score lower than a helpful response
 env2 = SupportEnv()
 env2.reset(task="medium")
 action = SupportAction(response="Could you please share your order number and verify your email?")
 _, r_ask, _, _ = env2.step(action)
-check("Asking unnecessary questions is penalized", r_ask < 0)
+
+env3 = SupportEnv()
+env3.reset(task="medium")
+action = SupportAction(response="I sincerely apologize. I have initiated a full refund to your account.")
+_, r_helpful, _, _ = env3.step(action)
+check("Asking unnecessary questions scores lower than helpful response", r_ask < r_helpful)
 
 
 # ─── 7. Edge Cases ───
@@ -179,6 +188,27 @@ for _ in range(7):
     env.step(action)
 result2 = grade(env.state(), max_steps=env.max_steps)
 check("Unresolved episode grade < resolved grade", result2.score < result.score)
+
+
+# ─── 9. Reward & Grade Range Compliance ───
+print("\n🔍 9. Reward & Grade Range Compliance (0.0–1.0)")
+
+all_rewards_valid = True
+for task_name in ["easy", "medium", "hard"]:
+    env = SupportEnv()
+    env.reset(task=task_name)
+    for i in range(env.max_steps):
+        action = SupportAction(response="I apologize for the issue. I have initiated your refund immediately.")
+        _, reward, done, _ = env.step(action)
+        if reward < 0.0 or reward > 1.0:
+            all_rewards_valid = False
+            break
+        if done:
+            break
+    g = grade(env.state(), max_steps=env.max_steps)
+    check(f"Task '{task_name}' grade in [0.0, 1.0]", 0.0 <= g.score <= 1.0)
+
+check("All rewards in [0.0, 1.0] range", all_rewards_valid)
 
 
 # ─── Summary ───

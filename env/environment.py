@@ -323,8 +323,8 @@ class SupportEnv:
         if not resolved and self._state.patience <= 0.0:
             reward -= 0.3
 
-        # 7. Clamp reward to [-1.0, 1.0]
-        reward = round(max(-1.0, min(1.0, reward)), 3)
+        # 7. Clamp reward to [0.0, 1.0] (OpenEnv spec requirement)
+        reward = round(max(0.0, min(1.0, reward)), 3)
 
         # 8. Generate user response
         next_msg, sentiment = self._get_user_response(resolved)

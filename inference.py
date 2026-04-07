@@ -47,35 +47,26 @@ SYSTEM_PROMPTS = {
 }
 
 
+# ─── Structured Logging (EXACT format required by evaluation) ───
+
 def log_start(task: str) -> None:
-    print(f"\n{'='*60}")
-    print(f"[START] task={task} env=supportops model={MODEL_NAME}")
-    print(f"{'='*60}", flush=True)
+    """[START] line — exact format required by evaluation."""
+    print(f"[START] task={task} env=supportops model={MODEL_NAME}", flush=True)
 
 
-def log_step(step: int, action: str, reward: float, done: bool, info: dict) -> None:
-    truncated = action[:80] + "..." if len(action) > 80 else action
+def log_step(step: int, action: str, reward: float, done: bool, error=None) -> None:
+    """[STEP] line — exact format required by evaluation."""
+    error_str = "null" if error is None else str(error)
     print(
-        f"  [STEP] step={step} reward={reward:+.3f} done={str(done).lower()} "
-        f"trust={info.get('trust', '?'):.3f} patience={info.get('patience', '?'):.3f} "
-        f"churn={info.get('churn_risk', '?'):.3f}",
+        f"[STEP] step={step} action={action} reward={reward:.2f} done={str(done).lower()} error={error_str}",
         flush=True,
     )
-    print(f"         action=\"{truncated}\"", flush=True)
 
 
-def log_end(success: bool, resolved: bool, steps: int, rewards: list, grade_result) -> None:
-    rewards_str = ",".join(f"{r:+.3f}" for r in rewards)
-    total = sum(rewards)
-    print(f"\n  [END] resolved={str(resolved).lower()} steps={steps} total_reward={total:+.3f}")
-    print(f"        rewards=[{rewards_str}]")
-    print(f"        grade={grade_result.score:.4f} | "
-          f"resolution={grade_result.resolution_score:.2f} "
-          f"efficiency={grade_result.efficiency_score:.2f} "
-          f"trust={grade_result.trust_score:.2f} "
-          f"patience={grade_result.patience_score:.2f} "
-          f"churn={grade_result.churn_score:.2f}")
-    print(f"{'='*60}\n", flush=True)
+def log_end(success: bool, steps: int, rewards: list) -> None:
+    """[END] line — exact format required by evaluation."""
+    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+    print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_str}", flush=True)
 
 
 def call_llm(messages: list, max_retries: int = 3) -> str:
@@ -94,7 +85,6 @@ def call_llm(messages: list, max_retries: int = 3) -> str:
         except Exception as e:
             if attempt < max_retries - 1:
                 wait = 2 ** attempt
-                print(f"  [RETRY] Attempt {attempt+1} failed: {e}. Retrying in {wait}s...", flush=True)
                 time.sleep(wait)
             else:
                 raise
@@ -119,7 +109,7 @@ def run_task(task_name: str) -> dict:
     done = False
     step = 0
     rewards = []
-    resolved = False
+    success = False
 
     try:
         while not done and step < env.max_steps:
@@ -135,12 +125,10 @@ def run_task(task_name: str) -> dict:
             obs, reward, done, info = env.step(action)
 
             rewards.append(reward)
-            resolved = obs.resolved
-            log_step(step, action_text, reward, done, info)
+            log_step(step, action_text, reward, done)
 
             # Add user follow-up to conversation history (if not done)
             if not done:
-                # Include observation context for next turn
                 context_msg = (
                     f"{obs.user_message}\n\n"
                     f"[System note: Customer sentiment={obs.sentiment:+.2f}, "
@@ -148,44 +136,20 @@ def run_task(task_name: str) -> dict:
                 )
                 messages.append({"role": "user", "content": context_msg})
 
-    except Exception as e:
-        print(f"  [ERROR] {str(e)}", flush=True)
+        success = obs.resolved if done else False
 
-    # Grade the episode
-    grade_result = grade(env.state(), max_steps=env.max_steps)
-    log_end(done, resolved, step, rewards, grade_result)
+    except Exception as e:
+        log_step(step, "ERROR", 0.0, True, error=str(e))
+        success = False
+
+    log_end(success, step, rewards)
 
     return {
         "task": task_name,
-        "resolved": resolved,
+        "success": success,
         "steps": step,
-        "total_reward": sum(rewards),
-        "grade": grade_result.score,
-        "grade_breakdown": grade_result.breakdown,
+        "rewards": rewards,
     }
-
-
-def print_summary(results: list) -> None:
-    """Print a summary table of results across all tasks."""
-    print("\n" + "=" * 60)
-    print("📊 SUMMARY — SupportOps-RL Evaluation")
-    print("=" * 60)
-    print(f"{'Task':<10} {'Resolved':<10} {'Steps':<8} {'Reward':<10} {'Grade':<8}")
-    print("-" * 46)
-
-    total_grade = 0
-    for r in results:
-        resolved_str = "✅" if r["resolved"] else "❌"
-        print(
-            f"{r['task']:<10} {resolved_str:<10} {r['steps']:<8} "
-            f"{r['total_reward']:+.3f}     {r['grade']:.4f}"
-        )
-        total_grade += r["grade"]
-
-    avg_grade = total_grade / len(results) if results else 0
-    print("-" * 46)
-    print(f"{'AVG':<10} {'':10} {'':8} {'':10} {avg_grade:.4f}")
-    print("=" * 60 + "\n")
 
 
 if __name__ == "__main__":
@@ -195,5 +159,3 @@ if __name__ == "__main__":
     for task in tasks:
         result = run_task(task)
         results.append(result)
-
-    print_summary(results)
