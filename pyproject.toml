@@ -14,12 +14,16 @@ dependencies = [
     "uvicorn>=0.27.0",
     "openai>=1.30.0",
     "python-dotenv>=0.19.0",
-    "pyyaml>=6.0"
+    "pyyaml>=6.0",
+    "openenv-core>=0.2.0"
 ]
+
+[project.scripts]
+server = "server.app:run"
 
 [project.urls]
 "Homepage" = "https://github.com/23f1002033/supportops-env"
 
 [tool.setuptools]
-packages = ["env", "env.tasks"]
+packages = ["env", "env.tasks", "server"]
 package-data = {"env.tasks" = ["*.json"]}
