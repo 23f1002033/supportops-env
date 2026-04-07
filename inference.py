@@ -117,6 +117,8 @@ def run_task(task_name: str) -> dict:
 
             # Call LLM with full conversation history
             action_text = call_llm(messages)
+            if len(action_text) > 500:
+                action_text = action_text[:497] + "..."
 
             # Add agent response to conversation history
             messages.append({"role": "assistant", "content": action_text})
