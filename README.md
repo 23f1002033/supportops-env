@@ -1,3 +1,13 @@
+---
+title: SupportOps-RL
+emoji: 🎯
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🚀 SupportOps-RL: Customer Support Simulation Environment
 
 > **A Real-World OpenEnv Benchmark for Customer Support Agent Evaluation**
