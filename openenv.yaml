@@ -1,6 +1,46 @@
 name: supportops-env
-description: AI customer support simulation environment with escalation risk
+version: "2.0.0"
+description: >
+  OpenEnv-compliant RL environment that simulates real-world customer support
+  interactions with hidden behavioral dynamics (trust, patience, churn risk).
+  Enables robust evaluation of AI agents across escalation scenarios.
+
+author: Utkarsh Gupta
+
 tasks:
-  - easy
-  - medium
-  - hard
+  - easy      # Order tracking
+  - medium    # Refund request
+  - hard      # Angry customer escalation
+
+action_schema:
+  type: object
+  properties:
+    response:
+      type: string
+      minLength: 1
+      maxLength: 500
+
+observation_schema:
+  type: object
+  properties:
+    user_message:
+      type: string
+    sentiment:
+      type: number
+      minimum: -1.0
+      maximum: 1.0
+    resolved:
+      type: boolean
+    step_count:
+      type: integer
+    urgency:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+
+endpoints:
+  reset: POST /reset
+  step: POST /step
+  state: GET /state
+  grade: GET /grade
+  tasks: GET /tasks

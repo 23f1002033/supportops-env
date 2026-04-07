@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 
 class SupportAction(BaseModel):
@@ -16,7 +16,8 @@ class SupportObservation(BaseModel):
     user_message: str
     sentiment: float = Field(..., ge=-1.0, le=1.0)
     resolved: bool
-    step_count: int 
+    step_count: int
+    urgency: float = Field(0.0, ge=0.0, le=1.0)
 
 
 class SupportState(BaseModel):
@@ -31,7 +32,11 @@ class SupportState(BaseModel):
     churn_risk: float = Field(..., ge=0.0, le=1.0)
 
     task_name: str
+    difficulty: str = "easy"
     expected_intent: str
+    resolved: bool = False
+    resolution_type: Optional[str] = None
+
 
 class StepResult(BaseModel):
     """
@@ -41,3 +46,16 @@ class StepResult(BaseModel):
     reward: float
     done: bool
     info: dict
+
+
+class GradeResult(BaseModel):
+    """
+    Structured grading output with breakdown.
+    """
+    score: float = Field(..., ge=0.0, le=1.0)
+    resolution_score: float
+    efficiency_score: float
+    trust_score: float
+    patience_score: float
+    churn_score: float
+    breakdown: dict

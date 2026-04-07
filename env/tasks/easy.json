@@ -1,7 +1,20 @@
 {
   "task_name": "easy",
-  "description": "Basic order tracking query",
-  "initial_message": "Where is my order?",
+  "description": "Customer asks about order tracking status. Agent should provide tracking information promptly.",
+  "initial_message": "Hi, I placed an order 3 days ago and still haven't received any shipping update. Where is my order?",
   "expected_intent": "tracking",
-  "difficulty": "easy"
+  "difficulty": "easy",
+  "initial_patience": 0.9,
+  "initial_trust": 0.6,
+  "initial_churn_risk": 0.1,
+  "patience_decay_rate": 0.1,
+  "max_steps": 5,
+  "resolution_keywords": ["track", "status", "shipped", "deliver", "dispatch", "transit", "arrival", "estimated"],
+  "follow_up_messages": [
+    "Can you give me the tracking number?",
+    "When will it arrive?",
+    "I need to know the exact status.",
+    "Is there a delay with the shipment?",
+    "I've been waiting too long for this."
+  ]
 }

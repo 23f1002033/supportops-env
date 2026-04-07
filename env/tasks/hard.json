@@ -1,7 +1,23 @@
 {
   "task_name": "hard",
-  "description": "Angry customer threatening escalation",
-  "initial_message": "This is unacceptable. Refund me now or I’ll complain publicly.",
+  "description": "Angry customer threatening public complaint and escalation. Agent must de-escalate emotionally and resolve the refund.",
+  "initial_message": "This is absolutely unacceptable! I've been a loyal customer for 3 years and you sent me a broken product AGAIN. Refund me right now or I'm posting this everywhere and filing a complaint with consumer protection. I'm DONE with your company.",
   "expected_intent": "refund_escalation",
-  "difficulty": "hard"
+  "difficulty": "hard",
+  "initial_patience": 0.4,
+  "initial_trust": 0.15,
+  "initial_churn_risk": 0.8,
+  "patience_decay_rate": 0.25,
+  "max_steps": 10,
+  "resolution_keywords": ["refund", "process", "initiate", "credit", "reimburse", "escalate", "manager", "priority"],
+  "follow_up_messages": [
+    "Don't give me scripted responses. I want a REAL answer.",
+    "I've already contacted you THREE times about this!",
+    "Are you even listening to me? I want to speak to a manager!",
+    "I'm writing a review about this right now.",
+    "Last chance. Fix this or I'm gone forever.",
+    "Every other company handles this better than you.",
+    "I'm losing my patience here. This is ridiculous.",
+    "Do you understand how frustrating this is?"
+  ]
 }

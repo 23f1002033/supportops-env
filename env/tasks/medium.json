@@ -1,7 +1,21 @@
 {
   "task_name": "medium",
-  "description": "Refund request scenario",
-  "initial_message": "I want a refund for a damaged product.",
+  "description": "Customer requests a refund for a damaged product. Agent should acknowledge the issue and process the refund.",
+  "initial_message": "I received my order but the product is completely damaged. The screen is cracked and the box was torn open. I want a full refund.",
   "expected_intent": "refund",
-  "difficulty": "medium"
+  "difficulty": "medium",
+  "initial_patience": 0.7,
+  "initial_trust": 0.4,
+  "initial_churn_risk": 0.4,
+  "patience_decay_rate": 0.15,
+  "max_steps": 7,
+  "resolution_keywords": ["refund", "process", "initiate", "credit", "reimburse", "return"],
+  "follow_up_messages": [
+    "How long will the refund take?",
+    "I paid good money for this. This is frustrating.",
+    "Will I get a full refund or partial?",
+    "I shouldn't have to deal with this. The packaging was terrible.",
+    "Can I also get a replacement instead?",
+    "I need this resolved today."
+  ]
 }
