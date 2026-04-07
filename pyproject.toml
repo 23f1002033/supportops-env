@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supportops-env"
+version = "2.0.0"
+description = "A real-world OpenEnv benchmark for customer support agent evaluation"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.27.0",
+    "openai>=1.30.0",
+    "python-dotenv>=0.19.0",
+    "pyyaml>=6.0"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/23f1002033/supportops-env"
+
+[tool.setuptools]
+packages = ["env", "env.tasks"]
+package-data = {"env.tasks" = ["*.json"]}
