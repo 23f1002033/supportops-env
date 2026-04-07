@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 from env.environment import SupportEnv
 from env.models import SupportAction
 from env.grader import grade
@@ -47,20 +48,21 @@ def root():
 
 
 @app.post("/reset")
-def reset(req: ResetRequest):
+def reset(req: Optional[ResetRequest] = None):
     """Reset the environment for a new episode."""
+    task = req.task if req else "easy"
     valid_tasks = ["easy", "medium", "hard"]
-    if req.task not in valid_tasks:
+    if task not in valid_tasks:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid task '{req.task}'. Must be one of {valid_tasks}",
+            detail=f"Invalid task '{task}'. Must be one of {valid_tasks}",
         )
     try:
-        obs = env.reset(task=req.task)
+        obs = env.reset(task=task)
         return {
             "observation": obs.model_dump(),
             "max_steps": env.max_steps,
-            "task": req.task,
+            "task": task,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
