@@ -1,0 +1,7 @@
+{
+  "task_name": "hard",
+  "description": "Angry customer threatening escalation",
+  "initial_message": "This is unacceptable. Refund me now or I’ll complain publicly.",
+  "expected_intent": "refund_escalation",
+  "difficulty": "hard"
+}

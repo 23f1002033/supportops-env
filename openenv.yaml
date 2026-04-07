@@ -1,0 +1,6 @@
+name: supportops-env
+description: AI customer support simulation environment with escalation risk
+tasks:
+  - easy
+  - medium
+  - hard

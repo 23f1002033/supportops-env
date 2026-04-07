@@ -1,0 +1,7 @@
+{
+  "task_name": "medium",
+  "description": "Refund request scenario",
+  "initial_message": "I want a refund for a damaged product.",
+  "expected_intent": "refund",
+  "difficulty": "medium"
+}

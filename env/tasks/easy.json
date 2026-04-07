@@ -1,0 +1,7 @@
+{
+  "task_name": "easy",
+  "description": "Basic order tracking query",
+  "initial_message": "Where is my order?",
+  "expected_intent": "tracking",
+  "difficulty": "easy"
+}
