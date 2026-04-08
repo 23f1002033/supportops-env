@@ -27,16 +27,16 @@ observation_schema:
       type: string
     sentiment:
       type: number
-      minimum: -1.0
-      maximum: 1.0
+      minimum: -0.99
+      maximum: 0.99
     resolved:
       type: boolean
     step_count:
       type: integer
     urgency:
       type: number
-      minimum: 0.0
-      maximum: 1.0
+      minimum: 0.01
+      maximum: 0.99
 
 endpoints:
   reset: POST /reset

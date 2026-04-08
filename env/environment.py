@@ -78,7 +78,7 @@ class SupportEnv:
             return 0.0
         # Urgency rises as patience drops and churn risk increases
         urgency = (1.0 - self._state.patience) * 0.5 + self._state.churn_risk * 0.5
-        return round(max(0.0, min(1.0, urgency)), 3)
+        return round(max(0.01, min(0.99, urgency)), 3)
 
     def _compute_reward(self, text: str) -> float:
         """
@@ -251,7 +251,7 @@ class SupportEnv:
             (self._state.trust * 0.6 + self._state.patience * 0.4) - 0.5,
             2
         )
-        sentiment = max(-1.0, min(1.0, sentiment))
+        sentiment = max(-0.99, min(0.99, sentiment))
 
         return msg, sentiment
 
@@ -263,19 +263,19 @@ class SupportEnv:
 
         # Patience decays each step, faster for harder tasks
         base_decay = decay_rate * (1.0 + 0.1 * self._state.step_count)
-        self._state.patience = max(0.0, self._state.patience - base_decay)
+        self._state.patience = max(0.01, self._state.patience - base_decay)
 
         # Good responses slow patience decay (partially recover)
         if any(w in text for w in ["sorry", "apologize", "understand"]):
-            self._state.patience = min(1.0, self._state.patience + 0.05)
+            self._state.patience = min(0.99, self._state.patience + 0.05)
 
         # Action words boost trust
         if any(w in text for w in ["process", "initiate", "approved", "immediately"]):
-            self._state.trust = min(1.0, self._state.trust + 0.1)
+            self._state.trust = min(0.99, self._state.trust + 0.1)
 
         # Churn risk is inverse-correlated with trust and patience
         self._state.churn_risk = round(
-            max(0.0, min(1.0, 1.0 - (self._state.trust * 0.6 + self._state.patience * 0.4))),
+            max(0.01, min(0.99, 1.0 - (self._state.trust * 0.6 + self._state.patience * 0.4))),
             3
         )
 

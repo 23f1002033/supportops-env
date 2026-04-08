@@ -14,10 +14,10 @@ class SupportObservation(BaseModel):
     What the agent sees at each step.
     """
     user_message: str
-    sentiment: float = Field(..., ge=-1.0, le=1.0)
+    sentiment: float = Field(..., gt=-1.0, lt=1.0)
     resolved: bool
     step_count: int
-    urgency: float = Field(0.0, ge=0.0, le=1.0)
+    urgency: float = Field(0.01, gt=0.0, lt=1.0)
 
 
 class SupportState(BaseModel):
@@ -27,9 +27,9 @@ class SupportState(BaseModel):
     conversation: List[str] = []
     step_count: int = 0
 
-    patience: float = Field(..., ge=0.0, le=1.0)
-    trust: float = Field(..., ge=0.0, le=1.0)
-    churn_risk: float = Field(..., ge=0.0, le=1.0)
+    patience: float = Field(..., gt=0.0, lt=1.0)
+    trust: float = Field(..., gt=0.0, lt=1.0)
+    churn_risk: float = Field(..., gt=0.0, lt=1.0)
 
     task_name: str
     difficulty: str = "easy"
