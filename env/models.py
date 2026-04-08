@@ -52,7 +52,7 @@ class GradeResult(BaseModel):
     """
     Structured grading output with breakdown.
     """
-    score: float = Field(..., ge=0.0, le=1.0)
+    score: float = Field(..., gt=0.0, lt=1.0)
     resolution_score: float
     efficiency_score: float
     trust_score: float
