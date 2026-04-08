@@ -69,7 +69,8 @@ def grade(state: SupportState, max_steps: int = 10) -> GradeResult:
         + weights["patience"] * patience_score
         + weights["churn"] * churn_score
     )
-    final_score = round(max(0.0, min(1.0, final_score)), 4)
+    # Clamp to (0, 1) strictly as required by validator
+    final_score = round(max(0.001, min(0.999, final_score)), 4)
 
     return GradeResult(
         score=final_score,
