@@ -141,7 +141,7 @@ def run_task(task_name: str) -> dict:
         success = obs.resolved if done else False
 
     except Exception as e:
-        log_step(step, "ERROR", 0.0, True, error=str(e))
+        log_step(step, "ERROR", 0.01, True, error=str(e))
         success = False
 
     log_end(success, step, rewards)
