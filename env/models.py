@@ -14,10 +14,10 @@ class SupportObservation(BaseModel):
     What the agent sees at each step.
     """
     user_message: str
-    sentiment: float = Field(..., gt=-1.0, lt=1.0)
+    sentiment: float = Field(..., gt=-1, lt=1)
     resolved: bool
     step_count: int
-    urgency: float = Field(0.01, gt=0.0, lt=1.0)
+    urgency: float = Field(0, gt=0, lt=1)
 
 
 class SupportState(BaseModel):
@@ -27,9 +27,9 @@ class SupportState(BaseModel):
     conversation: List[str] = []
     step_count: int = 0
 
-    patience: float = Field(..., gt=0.0, lt=1.0)
-    trust: float = Field(..., gt=0.0, lt=1.0)
-    churn_risk: float = Field(..., gt=0.0, lt=1.0)
+    patience: float = Field(..., gt=0, lt=1)
+    trust: float = Field(..., gt=0, lt=1)
+    churn_risk: float = Field(..., gt=0, lt=1)
 
     task_name: str
     difficulty: str = "easy"
@@ -52,7 +52,7 @@ class GradeResult(BaseModel):
     """
     Structured grading output with breakdown.
     """
-    score: float = Field(..., gt=0.0, lt=1.0)
+    score: float = Field(..., gt=0, lt=1)
     resolution_score: float
     efficiency_score: float
     trust_score: float
