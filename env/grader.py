@@ -1,4 +1,29 @@
+from __future__ import annotations
+
+from typing import Any
+
 from env.models import SupportState, GradeResult
+
+
+MIN_SCORE = 0.01
+MAX_SCORE = 0.99
+
+
+def _clamp_score(value: float, precision: int | None = None) -> float:
+    """Keep scores strictly inside (0, 1) for validator compatibility."""
+    score = max(MIN_SCORE, min(MAX_SCORE, float(value)))
+    return round(score, precision) if precision is not None else score
+
+
+def _coerce_state(state: SupportState | dict[str, Any] | None) -> SupportState | None:
+    if isinstance(state, SupportState):
+        return state
+    if isinstance(state, dict):
+        try:
+            return SupportState.model_validate(state)
+        except Exception:
+            return None
+    return None
 
 
 def grade(state: SupportState, max_steps: int = 10) -> GradeResult:
@@ -70,15 +95,15 @@ def grade(state: SupportState, max_steps: int = 10) -> GradeResult:
         + weights["churn"] * churn_score
     )
     # Clamp to (0, 1) strictly as required by validator, using 0.01 and 0.99
-    final_score = round(max(0.01, min(0.99, final_score)), 4)
+    final_score = _clamp_score(final_score, precision=4)
 
     return GradeResult(
         score=final_score,
-        resolution_score=round(max(0.01, min(0.99, resolution_score)), 3),
-        efficiency_score=round(max(0.01, min(0.99, efficiency_score)), 3),
-        trust_score=round(max(0.01, min(0.99, trust_score)), 3),
-        patience_score=round(max(0.01, min(0.99, patience_score)), 3),
-        churn_score=round(max(0.01, min(0.99, churn_score)), 3),
+        resolution_score=_clamp_score(resolution_score, precision=3),
+        efficiency_score=_clamp_score(efficiency_score, precision=3),
+        trust_score=_clamp_score(trust_score, precision=3),
+        patience_score=_clamp_score(patience_score, precision=3),
+        churn_score=_clamp_score(churn_score, precision=3),
         breakdown={
             "weights": weights,
             "task": state.task_name,
@@ -91,3 +116,35 @@ def grade(state: SupportState, max_steps: int = 10) -> GradeResult:
             "final_churn_risk": round(state.churn_risk, 3),
         }
     )
+
+
+def _grade_task_score(state: SupportState | dict[str, Any] | None = None, max_steps: int = 10) -> float:
+    """
+    Task-specific score entry point used by external validators.
+
+    If no valid state is provided, return the strict minimum score so the
+    output remains in-range and never emits boundary values (0.0/1.0).
+    """
+    parsed_state = _coerce_state(state)
+    if parsed_state is None:
+        return MIN_SCORE
+    return _clamp_score(grade(parsed_state, max_steps=max_steps).score, precision=3)
+
+
+def grade_easy(state: SupportState | dict[str, Any] | None = None, max_steps: int = 5) -> float:
+    return _grade_task_score(state=state, max_steps=max_steps)
+
+
+def grade_medium(state: SupportState | dict[str, Any] | None = None, max_steps: int = 7) -> float:
+    return _grade_task_score(state=state, max_steps=max_steps)
+
+
+def grade_hard(state: SupportState | dict[str, Any] | None = None, max_steps: int = 10) -> float:
+    return _grade_task_score(state=state, max_steps=max_steps)
+
+
+TASK_GRADER_PATHS = {
+    "easy": "env.grader.grade_easy",
+    "medium": "env.grader.grade_medium",
+    "hard": "env.grader.grade_hard",
+}

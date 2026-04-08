@@ -236,7 +236,8 @@ uvicorn server:app --reload --port 7860
 | `POST` | `/step` | Execute one step |
 | `GET` | `/state` | Inspect hidden state |
 | `GET` | `/grade` | Get graded score + breakdown |
-| `GET` | `/tasks` | List available tasks |
+| `GET` | `/grader` | Alias for `/grade` (validator compatibility) |
+| `GET` | `/tasks` | List tasks with metadata + grader entry points |
 
 ### Example: Reset + Step
 

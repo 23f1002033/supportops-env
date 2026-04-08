@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 import os
-import sys
 import time
 from openai import OpenAI
 from env.environment import SupportEnv
@@ -17,6 +16,14 @@ if HF_TOKEN is None:
     raise ValueError("HF_TOKEN environment variable is required. Set it in .env file.")
 
 client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+
+MIN_SCORE = 0.01
+MAX_SCORE = 0.99
+
+
+def clamp_score(score: float) -> float:
+    """Keep logged and returned task scores strictly inside (0, 1)."""
+    return round(max(MIN_SCORE, min(MAX_SCORE, float(score))), 3)
 
 
 # ─── Task-Specific System Prompts ───
@@ -63,10 +70,14 @@ def log_step(step: int, action: str, reward: float, done: bool, error=None) -> N
     )
 
 
-def log_end(success: bool, steps: int, rewards: list) -> None:
+def log_end(task_id: str, success: bool, steps: int, rewards: list, score: float) -> None:
     """[END] line — exact format required by evaluation."""
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_str}", flush=True)
+    print(
+        f"[END] task_id={task_id} success={str(success).lower()} "
+        f"steps={steps} rewards={rewards_str} score={score:.3f}",
+        flush=True,
+    )
 
 
 def call_llm(messages: list, max_retries: int = 3) -> str:
@@ -110,6 +121,7 @@ def run_task(task_name: str) -> dict:
     step = 0
     rewards = []
     success = False
+    score = MIN_SCORE
 
     try:
         while not done and step < env.max_steps:
@@ -138,19 +150,26 @@ def run_task(task_name: str) -> dict:
                 )
                 messages.append({"role": "user", "content": context_msg})
 
-        success = obs.resolved if done else False
+        final_state = env.state()
+        success = final_state.resolved if done else False
+        score = clamp_score(grade(final_state, max_steps=env.max_steps).score)
 
     except Exception as e:
         log_step(step, "ERROR", 0.01, True, error=str(e))
         success = False
+        try:
+            score = clamp_score(grade(env.state(), max_steps=env.max_steps).score)
+        except Exception:
+            score = MIN_SCORE
 
-    log_end(success, step, rewards)
+    log_end(task_name, success, step, rewards, score)
 
     return {
         "task": task_name,
         "success": success,
         "steps": step,
         "rewards": rewards,
+        "score": score,
     }
 
 
@@ -161,3 +180,8 @@ if __name__ == "__main__":
     for task in tasks:
         result = run_task(task)
         results.append(result)
+
+    average_score = clamp_score(sum(r["score"] for r in results) / len(results))
+    all_success = all(r["success"] for r in results)
+    combined_rewards = [r["score"] for r in results]
+    log_end("multi", all_success, 0, combined_rewards, average_score)

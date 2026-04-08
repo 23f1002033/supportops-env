@@ -4,8 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 from env.environment import SupportEnv
 from env.models import SupportAction
-from env.grader import grade
-import yaml
+from env.grader import grade, TASK_GRADER_PATHS
 import os
 
 app = FastAPI(
@@ -109,22 +108,48 @@ def get_grade():
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.get("/grader")
+def get_grader():
+    """Alias for /grade used by some validators."""
+    return get_grade()
+
+
 @app.get("/tasks")
 def list_tasks():
-    """List all available tasks with their configurations."""
-    tasks = {}
+    """List all available tasks with metadata and grader references."""
+    task_list = []
+    tasks_by_name = {}
     for task_name in ["easy", "medium", "hard"]:
         try:
             task_data = env.load_task(task_name)
-            tasks[task_name] = {
+            task_metadata = {
+                "task_id": task_name,
+                "id": task_name,
                 "description": task_data.get("description", ""),
                 "difficulty": task_data.get("difficulty", task_name),
                 "max_steps": task_data.get("max_steps", 10),
                 "initial_message_preview": task_data.get("initial_message", "")[:80],
+                "grader": TASK_GRADER_PATHS.get(task_name, "env.grader.grade"),
+                "action_schema": {
+                    "response": {
+                        "type": "string",
+                        "min_length": 1,
+                        "max_length": 500,
+                    }
+                },
             }
+            task_list.append(task_metadata)
+            tasks_by_name[task_name] = task_metadata
         except Exception:
-            tasks[task_name] = {"error": "Failed to load task"}
-    return {"tasks": tasks}
+            task_metadata = {
+                "task_id": task_name,
+                "id": task_name,
+                "error": "Failed to load task",
+                "grader": TASK_GRADER_PATHS.get(task_name, "env.grader.grade"),
+            }
+            task_list.append(task_metadata)
+            tasks_by_name[task_name] = task_metadata
+    return {"tasks": task_list, "tasks_by_name": tasks_by_name}
 
 def main():
     import uvicorn
