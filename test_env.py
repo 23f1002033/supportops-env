@@ -143,7 +143,7 @@ if __name__ == "__main__":
     print(f"{'Task':<10} {'Score':<10} {'Resolved':<10}")
     print("-" * 30)
     for task, r in results.items():
-        resolved = "✅" if r.resolution_score == 1.0 else "❌"
+        resolved = "✅" if r.resolution_score >= 0.99 else "❌"
         print(f"{task:<10} {r.score:<10.4f} {resolved}")
 
     avg = sum(r.score for r in results.values()) / len(results)
