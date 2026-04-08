@@ -178,7 +178,7 @@ env.step(action)
 result = grade(env.state(), max_steps=env.max_steps)
 check("Resolved episode grade > 0.5", result.score > 0.5)
 check("Grade has breakdown dict", "task" in result.breakdown)
-check("Grade resolution_score for resolved is 1.0", result.resolution_score == 1.0)
+check("Grade resolution_score for resolved is 0.99", result.resolution_score == 0.99)
 
 # Unresolved episode should score low
 env = SupportEnv()

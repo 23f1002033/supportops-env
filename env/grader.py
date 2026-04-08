@@ -74,11 +74,11 @@ def grade(state: SupportState, max_steps: int = 10) -> GradeResult:
 
     return GradeResult(
         score=final_score,
-        resolution_score=round(resolution_score, 3),
-        efficiency_score=round(efficiency_score, 3),
-        trust_score=round(trust_score, 3),
-        patience_score=round(patience_score, 3),
-        churn_score=round(churn_score, 3),
+        resolution_score=round(max(0.01, min(0.99, resolution_score)), 3),
+        efficiency_score=round(max(0.01, min(0.99, efficiency_score)), 3),
+        trust_score=round(max(0.01, min(0.99, trust_score)), 3),
+        patience_score=round(max(0.01, min(0.99, patience_score)), 3),
+        churn_score=round(max(0.01, min(0.99, churn_score)), 3),
         breakdown={
             "weights": weights,
             "task": state.task_name,
